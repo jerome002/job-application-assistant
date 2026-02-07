@@ -1,11 +1,11 @@
 import { useProfile } from "../../context/AppContext";
+import styles from "./ReviewStep.module.css";
 
 export default function ReviewStep() {
   const { state, dispatch } = useProfile();
-
   const { personal, account, skills, experience } = state.profile;
 
-  /* ---------------- VALIDATION ---------------- */
+  /* ---------- VALIDATION ---------- */
 
   const isPersonalValid =
     personal.first_name &&
@@ -25,115 +25,142 @@ export default function ReviewStep() {
     isSkillsValid &&
     isExperienceValid;
 
-  /* ---------------- SUBMIT ---------------- */
+  /* ---------- SUBMIT ---------- */
 
   const handleSubmit = () => {
     if (!isFormValid) return;
 
     console.log("SUBMITTED PROFILE:", state.profile);
-
     alert("Profile submitted successfully!");
     dispatch({ type: "RESET" });
   };
 
-  /* ---------------- UI ---------------- */
+  /* ---------- UI ---------- */
 
   return (
-    <>
-      <h2>Review Your Profile</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Review Your Profile</h2>
 
       {/* PERSONAL */}
       <section
-        style={{
-          border: "1px solid",
-          padding: 10,
-          marginBottom: 10,
-          borderColor: isPersonalValid ? "green" : "red"
-        }}
+        className={`${styles.section} ${
+          isPersonalValid ? styles.valid : styles.invalid
+        }`}
       >
-        <h3>Personal {!isPersonalValid && "(Incomplete)"}</h3>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionTitle}>Personal</span>
+          {!isPersonalValid && (
+            <span className={styles.incomplete}>Incomplete</span>
+          )}
+        </div>
+
         <p>{personal.first_name} {personal.last_name}</p>
         <p>Age: {personal.age || "—"}</p>
 
-        <button onClick={() => dispatch({ type: "GO_TO_STEP", step: 1 })}>
-          Edit Personal
+        <button
+          className={styles.editButton}
+          onClick={() => dispatch({ type: "GO_TO_STEP", step: 1 })}
+        >
+          Edit
         </button>
       </section>
 
       {/* ACCOUNT */}
       <section
-        style={{
-          border: "1px solid",
-          padding: 10,
-          marginBottom: 10,
-          borderColor: isAccountValid ? "green" : "red"
-        }}
+        className={`${styles.section} ${
+          isAccountValid ? styles.valid : styles.invalid
+        }`}
       >
-        <h3>Account {!isAccountValid && "(Incomplete)"}</h3>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionTitle}>Account</span>
+          {!isAccountValid && (
+            <span className={styles.incomplete}>Incomplete</span>
+          )}
+        </div>
+
         <p>Email: {account.email || "—"}</p>
 
-        <button onClick={() => dispatch({ type: "GO_TO_STEP", step: 2 })}>
-          Edit Account
+        <button
+          className={styles.editButton}
+          onClick={() => dispatch({ type: "GO_TO_STEP", step: 2 })}
+        >
+          Edit
         </button>
       </section>
 
       {/* SKILLS */}
       <section
-        style={{
-          border: "1px solid",
-          padding: 10,
-          marginBottom: 10,
-          borderColor: isSkillsValid ? "green" : "red"
-        }}
+        className={`${styles.section} ${
+          isSkillsValid ? styles.valid : styles.invalid
+        }`}
       >
-        <h3>Skills {!isSkillsValid && "(Add at least one)"}</h3>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionTitle}>Skills</span>
+          {!isSkillsValid && (
+            <span className={styles.incomplete}>Add at least one</span>
+          )}
+        </div>
 
-        <ul>
+        <ul className={styles.list}>
           {skills.map((s, i) => (
             <li key={i}>{s}</li>
           ))}
         </ul>
 
-        <button onClick={() => dispatch({ type: "GO_TO_STEP", step: 3 })}>
-          Edit Skills
+        <button
+          className={styles.editButton}
+          onClick={() => dispatch({ type: "GO_TO_STEP", step: 3 })}
+        >
+          Edit
         </button>
       </section>
 
       {/* EXPERIENCE */}
       <section
-        style={{
-          border: "1px solid",
-          padding: 10,
-          marginBottom: 10,
-          borderColor: isExperienceValid ? "green" : "red"
-        }}
+        className={`${styles.section} ${
+          isExperienceValid ? styles.valid : styles.invalid
+        }`}
       >
-        <h3>Experience {!isExperienceValid && "(Add at least one)"}</h3>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionTitle}>Experience</span>
+          {!isExperienceValid && (
+            <span className={styles.incomplete}>Add at least one</span>
+          )}
+        </div>
 
-        <ul>
+        <ul className={styles.list}>
           {experience.map((exp, i) => (
             <li key={i}>
-              {exp.company} – {exp.role} ({exp.years} yrs)
+              {exp.company} — {exp.role} ({exp.years} yrs)
             </li>
           ))}
         </ul>
 
-        <button onClick={() => dispatch({ type: "GO_TO_STEP", step: 4 })}>
-          Edit Experience
+        <button
+          className={styles.editButton}
+          onClick={() => dispatch({ type: "GO_TO_STEP", step: 4 })}
+        >
+          Edit
         </button>
       </section>
 
       {/* ACTIONS */}
-      <button onClick={() => dispatch({ type: "PREV_STEP" })}>
-        Back
-      </button>
+      <div className={styles.actions}>
+        <button
+          className={`${styles.button} ${styles.backButton}`}
+          onClick={() => dispatch({ type: "PREV_STEP" })}
+        >
+          Back
+        </button>
 
-      <button
-        onClick={handleSubmit}
-        disabled={!isFormValid}
-      >
-        Submit Profile
-      </button>
-    </>
+        <button
+          className={`${styles.button} ${styles.submitButton}`}
+          onClick={handleSubmit}
+          disabled={!isFormValid}
+        >
+          Submit Profile
+        </button>
+      </div>
+    </div>
   );
 }

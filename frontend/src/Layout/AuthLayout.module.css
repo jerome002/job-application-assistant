@@ -1,0 +1,18 @@
+.container {
+  max-width: 600px;                /* keeps form readable on large screens */
+  margin: 40px auto;                /* centers vertically and horizontally */
+  padding: 32px;                    /* space inside the card */
+  background-color: white;          /* card background */
+  border-radius: 12px;              /* smooth corners */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1); /* subtle shadow */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;                        /* spacing between children */
+}
+
+@media (max-width: 640px) {
+  .container {
+    margin: 20px;
+    padding: 24px;
+  }
+}

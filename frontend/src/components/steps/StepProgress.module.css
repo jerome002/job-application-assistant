@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  flex: 1;
+}
+
+.circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border: 2px solid var(--color-border);
+  background-color: white;
+}
+
+.label {
+  font-size: var(--text-xs);
+  text-align: center;
+  color: var(--color-secondary);
+}
+
+/* STATES */
+
+.completed {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+
+.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.upcoming {
+  opacity: 0.5;
+}

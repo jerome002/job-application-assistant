@@ -1,0 +1,80 @@
+
+/* CSS Reset / Normalize*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
+}
+
+/* Global Body Styles*/
+body {
+  font-family: var(--font-base);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* Headings*/
+h1, h2, h3 {
+  margin-bottom: var(--space-md);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--text-xl);
+}
+
+h2 {
+  font-size: var(--text-lg);
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/*Buttons*/
+button {
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--text-base);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--color-primary-hover);
+}
+
+button:disabled {
+  background-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+/*Utility*/
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
