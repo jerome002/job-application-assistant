@@ -1,16 +1,19 @@
 import express from "express";
-import { getProfile, updateProfileStep } from "../controllers/profileController.js";
+import {
+  getProfile,
+  updatePersonal,
+  updateSkills,
+  updateExperience,
+  updateFullProfile // 1. Import this!
+} from "../controllers/profileController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(verifyToken);
-
-// Get current user profile
-router.get("/", getProfile);
-
-// Update a specific step of the profile
-router.put("/", updateProfileStep);
+router.get("/", verifyToken, getProfile);
+router.put("/", verifyToken, updateFullProfile); // 2. ADD THIS LINE (The "Master" route)
+router.put("/personal", verifyToken, updatePersonal);
+router.put("/skills", verifyToken, updateSkills);
+router.put("/experience", verifyToken, updateExperience);
 
 export default router;

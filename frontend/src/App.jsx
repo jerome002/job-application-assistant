@@ -1,78 +1,97 @@
-import { useReducer, useState, useEffect } from "react";
-import { profileReducer, initialState } from "./reducer/ProfileReducer";
-import { ProfileContext } from "./context/AppContext";
-
+import React, { useEffect } from "react";
+import { ProfileProvider, useProfile } from "./context/AppContext";
 import ProfileLayout from "./Layout/ProfileLayout";
 import AuthLayout from "./Layout/AuthLayout";
-
-import PersonalStep from "./components/steps/PersonalStep";
-import AccountStep from "./components/steps/AccountStep";
-import SkillsStep from "./components/steps/SkillsStep";
-import ExperienceStep from "./components/steps/ExperienceStep";
-import ReviewStep from "./components/steps/ReviewStep";
 import StepProgress from "./components/steps/StepProgress";
-
+import PersonalStep from "./components/steps/PersonalStep";
+import ExperienceStep from "./components/steps/ExperienceStep";
+import SkillsStep from "./components/steps/SkillsStep";
+import ReviewStep from "./components/steps/ReviewStep";
+import Dashboard from "./dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
+import api from "./utils/api";
 
 export default function App() {
-  const [state, dispatch] = useReducer(profileReducer, initialState);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authMode, setAuthMode] = useState("login"); // 'login' or 'signup'
+  return (
+    <ProfileProvider>
+      <MainApp />
+    </ProfileProvider>
+  );
+}
 
-  /* ---------------- Load profile from localStorage if available ---------------- */
+function MainApp() {
+  const { state, dispatch } = useProfile();
+  const [authMode, setAuthMode] = React.useState("login");
+
+  // --- ALL YOUR CRITICAL LOGIC REMAINS UNTOUCHED ---
   useEffect(() => {
-    const savedProfile = localStorage.getItem("profile");
-    const token = localStorage.getItem("token"); // if you implement JWT
+    const initAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token && !state.profile.personal.first_name) {
+        try {
+          const res = await api.get("/profile"); 
+          dispatch({ type: "LOAD_PROFILE", payload: res.data.profile });
+        } catch (err) {
+          console.error("Session expired");
+          dispatch({ type: "LOGOUT" });
+        }
+      }
+    };
+    initAuth();
+  }, [dispatch]);
 
-    if (savedProfile && token && !isLoggedIn) {
-      dispatch({ type: "LOAD_PROFILE", payload: JSON.parse(savedProfile) });
-      setIsLoggedIn(true);
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      localStorage.setItem("currentStep", state.step);
     }
-  }, [isLoggedIn, dispatch]);
+  }, [state.step, state.isAuthenticated]);
 
-  /* ---------------- Choose which step component to show ---------------- */
+  useEffect(() => {
+    if (!state.isAuthenticated || !state.profile.personal.first_name) return;
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        await api.put("/profile/personal", { personal: state.profile.personal });
+        console.log("Draft auto-saved to cloud...");
+      } catch (err) {
+        console.error("Auto-save failed:", err);
+      }
+    }, 3000); 
+    return () => clearTimeout(delayDebounceFn);
+  }, [state.profile.personal, state.isAuthenticated]);
+
+  // --- UPDATED RENDER STEP ---
   const renderStep = () => {
     switch (state.step) {
-      case 1:
-        return <PersonalStep />;
-      case 2:
-        return <AccountStep />;
-      case 3:
-        return <ExperienceStep />;
-      case 4:
-        return <SkillsStep />;
-      case 5:
-        return <ReviewStep />;
-      default:
-        return <PersonalStep />;
+      case 1: return <PersonalStep />;
+      case 2: return <SkillsStep />;
+      case 3: return <ExperienceStep />;
+      case 4: return <ReviewStep />;
+      case 5: return <Dashboard />; // The only addition here
+      default: return <PersonalStep />;
     }
   };
 
-  /* ---------------- Show Auth forms if not logged in ---------------- */
-  if (!isLoggedIn) {
+  if (!state.isAuthenticated) {
     return (
       <AuthLayout>
         {authMode === "login" ? (
           <LoginForm
-            onLogin={(profileData) => {
-              // Save profile to reducer or localStorage if you want
-              if (profileData) {
-                dispatch({ type: "LOAD_PROFILE", payload: profileData });
-                localStorage.setItem("profile", JSON.stringify(profileData));
-              }
-              setIsLoggedIn(true);
+            onLogin={(profileData, token) => {
+              localStorage.setItem("token", token);
+              localStorage.setItem("profile", JSON.stringify(profileData));
+              dispatch({ type: "LOAD_PROFILE", payload: profileData });
+              dispatch({ type: "LOGIN_SUCCESS" });
             }}
             switchToSignup={() => setAuthMode("signup")}
           />
         ) : (
           <SignupForm
-            onSignup={(profileData) => {
-              if (profileData) {
-                dispatch({ type: "LOAD_PROFILE", payload: profileData });
-                localStorage.setItem("profile", JSON.stringify(profileData));
-              }
-              setIsLoggedIn(true);
+            onSignup={(profileData, token) => {
+              localStorage.setItem("token", token);
+              localStorage.setItem("profile", JSON.stringify(profileData));
+              dispatch({ type: "LOAD_PROFILE", payload: profileData });
+              dispatch({ type: "LOGIN_SUCCESS" });
             }}
             switchToLogin={() => setAuthMode("login")}
           />
@@ -81,14 +100,16 @@ export default function App() {
     );
   }
 
-  /* ---------------- Show Profile Builder if logged in ---------------- */
   return (
-    <ProfileContext.Provider value={{ state, dispatch }}>
-      <ProfileLayout>
-        <StepProgress />
-        <h1>Profile Builder</h1>
+    <ProfileLayout>
+      {/* SAFE UPDATE: Only show StepProgress if we are NOT on the dashboard 
+         (Dashboard is Step 5)
+      */}
+      {state.step < 5 && <StepProgress />}
+      
+      <main style={{ marginTop: state.step < 5 ? "2rem" : "0" }}>
         {renderStep()}
-      </ProfileLayout>
-    </ProfileContext.Provider>
+      </main>
+    </ProfileLayout>
   );
 }

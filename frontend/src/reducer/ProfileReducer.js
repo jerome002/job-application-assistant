@@ -1,47 +1,37 @@
-// Shape of the form
-// Single source of truth
-export const initialState = {
-  step: 1,
+const savedToken = localStorage.getItem("token");
+const savedProfile = localStorage.getItem("profile");
 
-  profile: {
-    personal: {
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      id_number: "",
-      age: ""
-    },
-    account: {
-      email: "",
-      password: ""
-    },
-    skills: [],       
+export const initialState = {
+  // If we have a token, assume they are authenticated for now
+  isAuthenticated: !!savedToken, 
+  step: Number(localStorage.getItem("currentStep")) || 1,
+  profile: savedProfile ? JSON.parse(savedProfile) : {
+    personal: { first_name: "", middle_name: "", last_name: "", age: "" },
+    account: { email: "", password: "" },
+    skills: [],
     experience: []
   }
 };
-
 export function profileReducer(state, action) {
   switch (action.type) {
-
     case "UPDATE_FIELD":
       return {
         ...state,
         profile: {
           ...state.profile,
           [action.section]: {
-            ...state.profile[action.section],
+            // Guard against undefined sections to prevent crashes
+            ...(state.profile[action.section] || {}),
             [action.field]: action.value
           }
         }
       };
 
     case "ADD_SKILL":
+      if (!action.value || state.profile.skills.includes(action.value)) return state;
       return {
         ...state,
-        profile: {
-          ...state.profile,
-          skills: [...state.profile.skills, action.value]
-        }
+        profile: { ...state.profile, skills: [...state.profile.skills, action.value] }
       };
 
     case "REMOVE_SKILL":
@@ -49,65 +39,62 @@ export function profileReducer(state, action) {
         ...state,
         profile: {
           ...state.profile,
-          skills: state.profile.skills.filter(
-            (_, index) => index !== action.index
-          )
+          skills: state.profile.skills.filter((_, i) => i !== action.index)
         }
       };
-case "ADD_EXPERIENCE":
-  return {
-    ...state,
-    profile: {
-      ...state.profile,
-      experience: [...state.profile.experience, action.value]
-    }
-  };
 
-case "REMOVE_EXPERIENCE":
-  return {
-    ...state,
-    profile: {
-      ...state.profile,
-      experience: state.profile.experience.filter(
-        (_, index) => index !== action.index
-      )
-    }
-  };
+    case "ADD_EXPERIENCE":
+      return {
+        ...state,
+        profile: { ...state.profile, experience: [...state.profile.experience, action.value] }
+      };
 
-case "UPDATE_EXPERIENCE_FIELD":
-  return {
-    ...state,
-    profile: {
-      ...state.profile,
-      experience: state.profile.experience.map((item, i) =>
-        i === action.index
-          ? { ...item, [action.field]: action.value }
-          : item
-      )
-    }
-  };
+    case "REMOVE_EXPERIENCE":
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          experience: state.profile.experience.filter((_, i) => i !== action.index)
+        }
+      };
 
+    case "UPDATE_EXPERIENCE_FIELD":
+      const updated = [...state.profile.experience];
+      updated[action.index] = action.value;
+      return { ...state, profile: { ...state.profile, experience: updated } };
+
+    case "LOAD_PROFILE":
+    case "SET_PROFILE":
+      const payload = action.payload || {};
+      return {
+        ...state,
+        profile: {
+          // Merge payload into CURRENT state, not initialState, 
+          // to prevent wiping data when moving between steps.
+          ...state.profile,
+          personal: { ...state.profile.personal, ...(payload.personal || {}) },
+          account: { ...state.profile.account, ...(payload.account || {}) },
+          skills: Array.isArray(payload.skills) ? payload.skills : state.profile.skills,
+          experience: Array.isArray(payload.experience) ? payload.experience : state.profile.experience
+        }
+      };
+
+    case "LOGIN_SUCCESS":
+      return { ...state, isAuthenticated: true };
+
+    case "LOGOUT":
+      localStorage.clear(); // Clears token, profile, and currentStep
+      return initialState;
 
     case "NEXT_STEP":
-      return {
-        ...state,
-        step: state.step + 1
-      };
+      // Increased to 5 to allow for Review step visibility
+      return { ...state, step: Math.min(state.step + 1, 5) };
 
     case "PREV_STEP":
-      return {
-        ...state,
-        step: state.step - 1
-      };
+      return { ...state, step: Math.max(state.step - 1, 1) };
+
     case "GO_TO_STEP":
-      return {
-    ...state,
-    step: action.step
-  };
-
-
-    case "RESET":
-      return initialState;
+      return { ...state, step: action.step };
 
     default:
       return state;

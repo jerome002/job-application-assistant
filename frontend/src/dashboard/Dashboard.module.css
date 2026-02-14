@@ -1,0 +1,107 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* Header & Avatar */
+.profileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 30px;
+}
+
+.avatarLabel { cursor: pointer; position: relative; }
+.avatar {
+  width: 90px;
+  height: 90px;
+  background: #2563eb;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.mainInfo { flex-grow: 1; margin-left: 25px; }
+.nameRow { display: flex; align-items: center; gap: 15px; }
+.nameRow h1 { margin: 0; font-size: 1.8rem; color: #111827; }
+
+/* Status Badge */
+.badgeActive, .badgeDraft {
+  display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;
+}
+.badgeActive { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+.badgeActive .dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; }
+.badgeDraft { background: #fffbeb; color: #92400e; border: 1px solid #fef08a; }
+.badgeDraft .dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; }
+
+/* Layout Grid */
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  align-items: stretch;
+}
+
+.sectionCard {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.sectionTitle { font-size: 0.8rem; text-transform: uppercase; color: #9ca3af; margin-bottom: 20px; }
+
+/* Skills & Timeline */
+.skillCloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.skillBadge { background: #eff6ff; color: #1d4ed8; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; }
+
+.timelineItem { position: relative; padding-left: 25px; padding-bottom: 25px; border-left: 2px solid #f3f4f6; }
+.timelineDot { position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; background: #2563eb; border-radius: 50%; border: 2px solid white; }
+.expContent h4 { margin: 0; color: #111827; }
+.company { margin: 2px 0; color: #4b5563; }
+.years { font-size: 0.8rem; color: #9ca3af; }
+
+/* Action Footer Fix */
+.footer {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 25px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.primaryBtn, .secondaryBtn {
+  min-width: 200px;
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primaryBtn { background: #2563eb; color: white; border: none; }
+.secondaryBtn { background: white; color: #374151; border: 1px solid #d1d5db; }
+
+.logoutBtn { background: none; border: 1px solid #fee2e2; color: #ef4444; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+
+@media (max-width: 850px) {
+  .contentGrid { grid-template-columns: 1fr; }
+  .profileHeader { flex-direction: column; text-align: center; }
+  .mainInfo { margin-left: 0; margin-top: 15px; }
+  .headerActions { margin-top: 15px; }
+}

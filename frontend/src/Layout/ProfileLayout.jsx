@@ -3,15 +3,18 @@ export default function ProfileLayout({ children }) {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f3f4f6", // light gray background
+        backgroundColor: "#f3f4f6",
         padding: "40px 20px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
       }}
     >
       <div
         style={{
-          maxWidth: "800px",   // make it wider than auth form
-          margin: "0 auto",
-          backgroundColor: "#fff",
+          width: "100%",
+          maxWidth: "800px",
+          backgroundColor: "#ffffff",
           borderRadius: "12px",
           padding: "32px",
           boxShadow: "0 6px 18px rgba(0,0,0,0.1)",

@@ -1,49 +1,59 @@
 .container {
   display: flex;
   justify-content: space-between;
-  margin-bottom: var(--space-lg);
+  align-items: center;
+  margin-bottom: 3rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  /* Soft shadow instead of a harsh border */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
   flex: 1;
+  position: relative;
 }
 
 .circle {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-sm);
   font-weight: 600;
-  border: 2px solid var(--color-border);
-  background-color: white;
+  transition: all 0.2s ease-in-out;
+  border: 2px solid #e5e7eb; /* Subtle gray border */
+  background: #fff;
+  color: #9ca3af;
+}
+
+/* Professional Colors */
+.active {
+  border-color: #2563eb; /* Royal Blue */
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.completed {
+  border-color: #059669; /* Sage/Forest Green (more professional) */
+  background-color: #ecfdf5;
+  color: #059669;
 }
 
 .label {
-  font-size: var(--text-xs);
-  text-align: center;
-  color: var(--color-secondary);
+  font-size: 0.95rem; /* Larger and clearer */
+  font-weight: 600;
+  margin-top: 0.75rem;
+  color: #6b7280;
+  letter-spacing: 0.025em;
+  text-transform: uppercase; /* Professional "Header" feel */
 }
 
-/* STATES */
-
-.completed {
-  background-color: var(--color-success);
-  border-color: var(--color-success);
-  color: white;
-}
-
-.active {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.upcoming {
-  opacity: 0.5;
+.label.active {
+  color: #1f2937;
 }

@@ -2,34 +2,29 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// SIGNUP
 export const signup = async (req, res) => {
   try {
-    //console.log("Signup request received:", req.body);
     const { email, password } = req.body;
-    
 
-    // Check if user already exists
+    // 1. Validate input exists
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    // 2. Check for existing user using the nested path
     const existingUser = await User.findOne({ "profile.account.email": email });
-    if (existingUser) return res.status(400).json({ message: "User already exists" });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-    // Hash password
+    // 3. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user with initial profile structure
+    // 4. Create User - EXACT match to your Model
     const newUser = new User({
       profile: {
-        personal: {
-          first_name: "",
-          middle_name: "",
-          last_name: "",
-          id_number: "",
-          age: ""
-        },
-        account: {
-          email,
-          password: hashedPassword
-        },
+        personal: { first_name: "", middle_name: "", last_name: "", age: "" },
+        account: { email, password: hashedPassword },
         skills: [],
         experience: []
       }
@@ -37,43 +32,58 @@ export const signup = async (req, res) => {
 
     await newUser.save();
 
-    // Create JWT token
-    const token = jwt.sign(
-      { id: newUser._id, email: newUser.profile.account.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    // 5. Generate Token (Fallback to 'dev_secret' if .env is missing)
+    const secret = process.env.JWT_SECRET || "dev_secret_key_123";
+    const token = jwt.sign({ id: newUser._id }, secret, { expiresIn: "1d" });
 
-    res.status(201).json({ token, profile: newUser.profile });
+    // 6. Return response
+    res.status(201).json({
+      token,
+      profile: {
+        personal: newUser.profile.personal,
+        account: { email: newUser.profile.account.email },
+        skills: newUser.profile.skills,
+        experience: newUser.profile.experience
+      }
+    });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    // This will print the EXACT error in your server terminal
+    console.error("CRITICAL SIGNUP ERROR:", err); 
+    res.status(500).json({ message: "Server error during registration", error: err.message });
   }
 };
-
-// LOGIN
+// ✅ LOGIN CONTROLLER (This was likely missing or not exported!)
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const emailClean = email.trim().toLowerCase();
-    const user = await User.findOne({ "profile.account.email": emailClean });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // Look for the user by the nested email path
+    const user = await User.findOne({ "profile.account.email": email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.profile.account.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-    // JWT token
-    const token = jwt.sign(
-      { id: user._id, email: user.profile.account.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "secret", { expiresIn: "1d" });
 
-    res.status(200).json({ token, profile: user.profile });
+    // Send back the profile data (without the password)
+    res.json({
+      token,
+      profile: {
+        personal: user.profile.personal,
+        account: { email: user.profile.account.email },
+        skills: user.profile.skills,
+        experience: user.profile.experience
+      }
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Login Error:", err);
+    res.status(500).json({ message: "Server error during login" });
   }
 };

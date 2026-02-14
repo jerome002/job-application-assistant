@@ -1,52 +1,61 @@
 import { useState } from "react";
+import api from "../../utils/api";
 import styles from "./LoginForm.module.css";
-import axios from "axios";
 
-export default function LoginForm({ onLogin }) {
+export default function LoginForm({ onLogin, switchToSignup }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isValid = email.trim() !== "" && password.length >= 6;
+  const isValid = email.trim() !== "" && password.trim() !== "";
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!isValid) return setError("Please fill in valid email and password.");
+    if (!isValid) return setError("Please fill in email and password.");
+
+    setLoading(true);
+    setError("");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login",{ email, password });
+      const res = await api.post("/auth/login", { email, password });
       const { token, profile } = res.data;
 
-      // Save JWT token
-      localStorage.setItem("token", token);
-      localStorage.setItem("profile", JSON.stringify(profile));
-
-      setError("");
-      onLogin(profile); // notify App that login is successful
+      // Call parent function to update context + localStorage
+      onLogin(profile, token);
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed.");
+      setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form className={styles.form} onSubmit={handleLogin}>
       <h2>Login</h2>
+
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+
       {error && <p className={styles.error}>{error}</p>}
-      <button type="submit" disabled={!isValid}>Login</button>
+
+      <button type="submit" disabled={!isValid || loading}>
+        {loading ? "Logging in..." : "Login"}
+      </button>
+
       <p>
-        Don’t have an account? <span className={styles.link} onClick={() => onLogin("signup")}>Sign up here</span>
+        Don't have an account? <span onClick={switchToSignup}>Sign up here</span>
       </p>
     </form>
   );
