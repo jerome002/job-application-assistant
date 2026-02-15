@@ -11,6 +11,7 @@ import Dashboard from "./dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import api from "./utils/api";
+import JobDashboard from "./pages/JobDashboard";
 
 export default function App() {
   return (
@@ -66,9 +67,9 @@ function MainApp() {
       case 1: return <PersonalStep />;
       case 2: return <SkillsStep />;
       case 3: return <ExperienceStep />;
-      case 4: return <ReviewStep />;
-      case 5: return <Dashboard />; // The only addition here
-      default: return <PersonalStep />;
+      case 4: return <ReviewStep />; 
+      case 5: return <JobDashboard user={state.profile} />
+      default: return <JobDashboard/>;
     }
   };
 
@@ -100,14 +101,14 @@ function MainApp() {
     );
   }
 
+  if (state.step === 5) {
+    return <JobDashboard user={state.profile} />;
+  }
+
   return (
     <ProfileLayout>
-      {/* SAFE UPDATE: Only show StepProgress if we are NOT on the dashboard 
-         (Dashboard is Step 5)
-      */}
       {state.step < 5 && <StepProgress />}
-      
-      <main style={{ marginTop: state.step < 5 ? "2rem" : "0" }}>
+      <main style={{ marginTop: "2rem" }}>
         {renderStep()}
       </main>
     </ProfileLayout>

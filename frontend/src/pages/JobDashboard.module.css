@@ -1,0 +1,108 @@
+.dashboardLayout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 30px;
+  padding: 40px;
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* SIDEBAR COMPONENTS */
+.sidebar { flex: 0 0 280px; display: flex; flex-direction: column; }
+.profileCard {
+  background: #1e293b; color: white; padding: 30px 20px;
+  border-radius: 20px; text-align: center; margin-bottom: 20px;
+}
+.avatarGlow {
+  width: 70px; height: 70px; margin: 0 auto 15px;
+  background: linear-gradient(45deg, #6366f1, #a855f7);
+  border-radius: 50%; padding: 3px;
+}
+.avatarInner {
+  background: #1e293b; width: 100%; height: 100%; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: bold;
+}
+.statusBadge {
+  background: rgba(74, 222, 128, 0.2); color: #4ade80;
+  padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+}
+
+/* CARDS */
+.glassCard {
+  background: white; border: 1px solid #e2e8f0;
+  padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.sectionLabel { font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 12px; }
+.modernTag {
+  background: #f1f5f9; color: #475569; padding: 4px 10px;
+  border-radius: 6px; font-size: 0.7rem; margin: 2px; display: inline-block;
+}
+
+/* MAIN FEED */
+.mainFeed { flex: 1; max-width: 850px; min-width: 0; }
+.feedHeader { display: flex; justify-content: space-between; margin-bottom: 25px; }
+.mainHeading { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0; }
+.subHeading { color: #64748b; font-size: 0.95rem; }
+
+.filterBar { display: flex; gap: 10px; margin-bottom: 20px; }
+.filterTab {
+  background: white; border: 1px solid #e2e8f0; padding: 8px 16px;
+  border-radius: 10px; font-size: 0.85rem; cursor: pointer; color: #64748b;
+}
+.activeTab { background: #6366f1; color: white; border-color: #6366f1; }
+
+.jobCard {
+  background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px;
+  border: 1px solid #e2e8f0; transition: transform 0.2s;
+}
+.jobCard:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+.jobTitle { font-size: 1.2rem; font-weight: 700; color: #1e293b; margin: 0; }
+.companyName { color: #6366f1; font-weight: 600; margin: 5px 0; }
+.jobMeta { display: flex; gap: 15px; color: #94a3b8; font-size: 0.8rem; margin-top: 10px; }
+
+.scoreCircle {
+  width: 60px; height: 60px; border: 3px solid #f1f5f9; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.scoreNum { font-weight: 800; color: #1e293b; font-size: 0.9rem; }
+.scoreLabel { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; }
+
+.jobActions { display: flex; gap: 10px; margin-top: 20px; }
+.applyBtn {
+  flex: 1; background: #6366f1; color: white; border: none;
+  padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;
+}
+.secondaryBtn {
+  background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 15px;
+  border-radius: 10px; font-weight: 600; cursor: pointer;
+}
+
+/* LOGOUT & TOGGLE */
+.logoutBtn {
+  margin-top: auto; background: #fee2e2; color: #ef4444; border: none;
+  padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.toggleRow { display: flex; justify-content: space-between; align-items: center; }
+.toggleInput { width: 40px; height: 20px; cursor: pointer; }
+
+/* ANIMATION */
+.pulseDot {
+  width: 8px; height: 8px; background: #ef4444; border-radius: 50%;
+  animation: pulse 2s infinite; display: inline-block; margin-right: 5px;
+}
+@keyframes pulse {
+  0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
+}
+
+/* RIGHT BAR */
+.rightSidebar { flex: 0 0 260px; }
+.statCard {
+  background: #6366f1; color: white; padding: 20px;
+  border-radius: 16px; margin-bottom: 20px; text-align: center;
+}
+.statVal { font-size: 2rem; font-weight: 900; margin: 0; }
+.logCard { background: white; border-radius: 16px; padding: 15px; border: 1px solid #e2e8f0; }
+.logEntry { font-size: 0.75rem; padding: 8px 0; border-bottom: 1px solid #f1f5f9; color: #64748b; }
