@@ -1,22 +1,16 @@
 import { useProfile } from "../../context/AppContext";
 import styles from "./StepProgress.module.css";
 
-const STEPS = [
-  "Personal",
-  "Skills",
-  "Experience",
-  "Review"
-];
+const STEPS = ["Personal", "Skills", "Experience", "Review"];
 
 export default function StepProgress() {
-  const { state, dispatch } = useProfile(); // Added dispatch
+  const { state, dispatch } = useProfile();
   const currentStep = state.step;
 
   const handleStepClick = (stepNumber) => {
-    // Basic Rule: Allow jumping back always. 
-    // Allow jumping forward only to steps the user has already reached.
-    if (stepNumber <= currentStep || stepNumber === currentStep + 1) {
-      dispatch({ type: "GO_TO_STEP", step: stepNumber });
+    // Navigation Safety: Users can only jump to steps they've seen or the very next one
+    if (stepNumber <= currentStep + 1 && stepNumber < 5) {
+      dispatch({ type: "SET_STEP", payload: stepNumber });
     }
   };
 
@@ -24,27 +18,19 @@ export default function StepProgress() {
     <div className={styles.container}>
       {STEPS.map((label, index) => {
         const stepNumber = index + 1;
-
-        const status =
-          stepNumber < currentStep
-            ? "completed"
-            : stepNumber === currentStep
-            ? "active"
-            : "upcoming";
+        const isActive = stepNumber === currentStep;
+        const isCompleted = stepNumber < currentStep;
 
         return (
           <div 
             key={label} 
-            className={`${styles.step} ${stepNumber <= currentStep ? styles.clickable : ""}`}
+            className={`${styles.step} ${isCompleted || isActive ? styles.clickable : ""}`}
             onClick={() => handleStepClick(stepNumber)}
           >
-            <div className={`${styles.circle} ${styles[status]}`}>
-              {stepNumber < currentStep ? "✓" : stepNumber}
+            <div className={`${styles.circle} ${isActive ? styles.active : ""} ${isCompleted ? styles.completed : ""}`}>
+              {isCompleted ? "✓" : stepNumber}
             </div>
-            <span className={`${styles.label} ${styles[status]}`}>{label}</span>
-            
-            {/* Optional: Add a connector line between circles */}
-            {index < STEPS.length - 1 && <div className={styles.line} />}
+            <span className={styles.label}>{label}</span>
           </div>
         );
       })}

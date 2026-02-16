@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ProfileProvider, useProfile } from "./context/AppContext";
 import ProfileLayout from "./Layout/ProfileLayout";
 import AuthLayout from "./Layout/AuthLayout";
@@ -7,11 +7,11 @@ import PersonalStep from "./components/steps/PersonalStep";
 import ExperienceStep from "./components/steps/ExperienceStep";
 import SkillsStep from "./components/steps/SkillsStep";
 import ReviewStep from "./components/steps/ReviewStep";
-import Dashboard from "./dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
-import api from "./utils/api";
 import JobDashboard from "./pages/JobDashboard";
+import SuccessStep from "./components/steps/SuccessStep";
+import api from "./utils/api";
 
 export default function App() {
   return (
@@ -23,56 +23,37 @@ export default function App() {
 
 function MainApp() {
   const { state, dispatch } = useProfile();
-  const [authMode, setAuthMode] = React.useState("login");
+  const [authMode, setAuthMode] = useState("login");
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  // --- ALL YOUR CRITICAL LOGIC REMAINS UNTOUCHED ---
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem("token");
-      if (token && !state.profile.personal.first_name) {
+      if (token) {
         try {
-          const res = await api.get("/profile"); 
-          dispatch({ type: "LOAD_PROFILE", payload: res.data.profile });
+          const res = await api.get("/profile");
+          dispatch({ type: "SET_PROFILE", payload: res.data.profile });
+          dispatch({ type: "LOGIN_SUCCESS" });
+
+          // Returning users with existing profiles go straight to the Dashboard
+          if (res.data.profile.skills?.length > 0) {
+            dispatch({ type: "SET_STEP", payload: 6 });
+          }
         } catch (err) {
-          console.error("Session expired");
+          localStorage.removeItem("token");
           dispatch({ type: "LOGOUT" });
         }
       }
+      setIsInitializing(false);
     };
     initAuth();
   }, [dispatch]);
 
-  useEffect(() => {
-    if (state.isAuthenticated) {
-      localStorage.setItem("currentStep", state.step);
-    }
-  }, [state.step, state.isAuthenticated]);
+  const handleEditProfile = () => dispatch({ type: "SET_STEP", payload: 1 });
 
-  useEffect(() => {
-    if (!state.isAuthenticated || !state.profile.personal.first_name) return;
-    const delayDebounceFn = setTimeout(async () => {
-      try {
-        await api.put("/profile/personal", { personal: state.profile.personal });
-        console.log("Draft auto-saved to cloud...");
-      } catch (err) {
-        console.error("Auto-save failed:", err);
-      }
-    }, 3000); 
-    return () => clearTimeout(delayDebounceFn);
-  }, [state.profile.personal, state.isAuthenticated]);
+  if (isInitializing) return <div className="loader">Loading...</div>;
 
-  // --- UPDATED RENDER STEP ---
-  const renderStep = () => {
-    switch (state.step) {
-      case 1: return <PersonalStep />;
-      case 2: return <SkillsStep />;
-      case 3: return <ExperienceStep />;
-      case 4: return <ReviewStep />; 
-      case 5: return <JobDashboard user={state.profile} />
-      default: return <JobDashboard/>;
-    }
-  };
-
+  // 1. Auth Logic
   if (!state.isAuthenticated) {
     return (
       <AuthLayout>
@@ -80,9 +61,9 @@ function MainApp() {
           <LoginForm
             onLogin={(profileData, token) => {
               localStorage.setItem("token", token);
-              localStorage.setItem("profile", JSON.stringify(profileData));
-              dispatch({ type: "LOAD_PROFILE", payload: profileData });
+              dispatch({ type: "SET_PROFILE", payload: profileData });
               dispatch({ type: "LOGIN_SUCCESS" });
+              dispatch({ type: "SET_STEP", payload: 1 });
             }}
             switchToSignup={() => setAuthMode("signup")}
           />
@@ -90,9 +71,9 @@ function MainApp() {
           <SignupForm
             onSignup={(profileData, token) => {
               localStorage.setItem("token", token);
-              localStorage.setItem("profile", JSON.stringify(profileData));
-              dispatch({ type: "LOAD_PROFILE", payload: profileData });
+              dispatch({ type: "SET_PROFILE", payload: profileData });
               dispatch({ type: "LOGIN_SUCCESS" });
+              dispatch({ type: "SET_STEP", payload: 1 });
             }}
             switchToLogin={() => setAuthMode("login")}
           />
@@ -101,15 +82,23 @@ function MainApp() {
     );
   }
 
-  if (state.step === 5) {
-    return <JobDashboard user={state.profile} />;
+  // 2. Dashboard Logic (Now Step 6)
+  if (state.step === 6) {
+    return <JobDashboard user={state.profile} onEdit={handleEditProfile} />;
   }
 
+  // 3. Multi-Step Onboarding Logic
   return (
     <ProfileLayout>
-      {state.step < 5 && <StepProgress />}
+      
       <main style={{ marginTop: "2rem" }}>
-        {renderStep()}
+        {state.step === 1 && <PersonalStep />}
+        {state.step === 2 && <SkillsStep />}
+        {state.step === 3 && <ExperienceStep />}
+        {state.step === 4 && <ReviewStep />}
+        
+        {/* Step 5 is the bridge celebration screen */}
+        {state.step === 5 && <SuccessStep />}
       </main>
     </ProfileLayout>
   );

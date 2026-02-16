@@ -1,27 +1,22 @@
+import React from 'react';
+
 export default function ProfileLayout({ children }) {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        backgroundColor: "#f3f4f6",
-        padding: "40px 20px",
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "var(--color-bg)", 
         display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
+        justifyContent: "center", // Changed from justify-content
+        alignItems: "center",     // Center vertically
+        overflow: "hidden",       // Lock the background
+        position: "fixed",
+        top: 0,
+        left: 0,
       }}
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "800px",
-          backgroundColor: "#ffffff",
-          borderRadius: "12px",
-          padding: "32px",
-          boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
-        }}
-      >
-        {children}
-      </div>
+      {children}
     </div>
   );
 }

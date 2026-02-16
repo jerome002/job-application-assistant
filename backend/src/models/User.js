@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const profileSchema = new mongoose.Schema({
@@ -6,11 +5,8 @@ const profileSchema = new mongoose.Schema({
     first_name: { type: String, default: "" },
     middle_name: { type: String, default: "" },
     last_name: { type: String, default: "" },
-    age: { type: String, default: "" } 
-  },
-  account: {
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true }, 
-    password: { type: String, required: true }
+    phone: { type: String, default: "" }, // ADDED PHONE
+    location: { type: String, default: "" } // ENSURED LOCATION
   },
   skills: { type: [String], default: [] },
   experience: [
@@ -19,13 +15,36 @@ const profileSchema = new mongoose.Schema({
       role: { type: String, default: "" },
       years: { type: String, default: "" }
     }
-  ]
+  ],
+  settings: {
+    autoApply: { type: Boolean, default: false }
+  }
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
-  profile: { type: profileSchema, default: () => ({}) }
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    lowercase: true, 
+    trim: true 
+  },
+  password: { 
+    type: String, 
+    required: true 
+  },
+  profile: { 
+    type: profileSchema, 
+    default: () => ({}) 
+  }
 }, { timestamps: true });
 
-// ✅ We removed the .pre('save') block that was causing the crash.
+userSchema.set('toJSON', {
+  virtuals: true,
+  transform: (doc, ret) => {
+    delete ret.password;
+    return ret;
+  }
+});
 
 export default mongoose.model("User", userSchema);

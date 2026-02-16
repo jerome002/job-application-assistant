@@ -12,24 +12,30 @@ export default function SignupForm({ onSignup, switchToLogin }) {
   const isValid = email.trim() !== "" && password.length >= 6 && password === confirm;
 
   const handleSignup = async (e) => {
-    e.preventDefault();
-    if (!isValid) return setError("Please fix the errors above.");
+  e.preventDefault();
+  if (!isValid) return setError("Please fix the errors above.");
 
-    setLoading(true);
-    setError("");
+  setLoading(true);
+  setError("");
 
-    try {
-      const res = await api.post("/auth/signup", { email, password });
-      const { token, profile } = res.data;
-
-      // Call parent to update context + localStorage
-      onSignup(profile, token);
-    } catch (err) {
-      setError(err.response?.data?.message || "Signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const res = await api.post("/auth/signup", { 
+      email: email.toLowerCase().trim(), 
+      password,
+      // Pass an empty profile structure so the backend doesn't crash
+      personal: { first_name: "", last_name: "", age: "" } 
+    });
+    
+    const { token, profile } = res.data;
+    onSignup(profile, token);
+  } catch (err) {
+    // Look at the console to see the REAL error from the backend
+    console.error("Signup Error Details:", err.response?.data);
+    setError(err.response?.data?.message || "Signup failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <form className={styles.form} onSubmit={handleSignup}>

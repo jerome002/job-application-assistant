@@ -1,15 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom'; // 1. Import the Router
 import App from './App';
 import { ProfileProvider } from './context/AppContext';
-import "./styles/variables.css"; 
-import "./styles/button.module.css";
-import "./styles/inputs.module.css";
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ProfileProvider>
-      <App />
-    </ProfileProvider>
+    <BrowserRouter> {/* 2. Wrap the Provider and App */}
+      <ProfileProvider>
+        <App />
+      </ProfileProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );

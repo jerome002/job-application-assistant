@@ -1,68 +1,83 @@
-import { useState } from "react";
-import { useProfile } from "../../context/AppContext";
-import styles from "./ExperienceStep.module.css";
-import api from "../../utils/api";
+import React, { useState } from 'react';
+import { useProfile } from '../../context/AppContext';
+import styles from './ExperienceStep.module.css';
 
 export default function ExperienceStep() {
   const { state, dispatch } = useProfile();
-  const [company, setCompany] = useState("");
-  const [role, setRole] = useState("");
-  const [years, setYears] = useState("");
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [form, setForm] = useState({ role: "", company: "", years: "" });
+  const experiences = state.profile.experience || [];
 
-  const experiences = state?.profile?.experience ?? [];
-
-  const handleAddOrUpdate = () => {
-    if (!company.trim() || !role.trim() || !years.trim()) return setError("All fields required.");
-    const newEntry = { company: company.trim(), role: role.trim(), years: years.trim() };
-
-    if (editingIndex !== null) {
-      dispatch({ type: "UPDATE_EXPERIENCE_FIELD", index: editingIndex, value: newEntry });
-      setEditingIndex(null);
-    } else {
-      dispatch({ type: "ADD_EXPERIENCE", value: newEntry });
+  const addExperience = () => {
+    if (form.role && form.company && form.years) {
+      dispatch({ type: 'ADD_EXPERIENCE', payload: form });
+      setForm({ role: "", company: "", years: "" });
     }
-    setCompany(""); setRole(""); setYears(""); setError("");
-  };
-
-  const handleNext = async () => {
-    if (experiences.length === 0) return setError("Add at least one experience.");
-    setLoading(true);
-    try {
-      const res = await api.put("/profile/experience", { experience: experiences });
-      dispatch({ type: "LOAD_PROFILE", payload: res.data });
-      dispatch({ type: "NEXT_STEP" });
-    } catch (err) {
-      setError("Failed to save experience");
-    } finally { setLoading(false); }
   };
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Experience</h2>
-      <div className={styles.fieldGroup}>
-        <input className={styles.input} placeholder="Company" value={company} onChange={(e) => setCompany(e.target.value)} />
-        <input className={styles.input} placeholder="Role" value={role} onChange={(e) => setRole(e.target.value)} />
-        <input className={styles.input} type="number" value={years} onChange={(e) => setYears(e.target.value)} />
-      </div>
-      <button className={styles.addButton} onClick={handleAddOrUpdate}>
-        {editingIndex !== null ? "Update" : "Add"}
-      </button>
-      <ul className={styles.list}>
-        {experiences.map((exp, index) => (
-          <li key={index} className={styles.listItem}>
-            <span onClick={() => {setCompany(exp.company); setRole(exp.role); setYears(exp.years); setEditingIndex(index);}}>
-              {exp.company} ({exp.years} yrs) 📝
-            </span>
-            <button onClick={() => dispatch({ type: "REMOVE_EXPERIENCE", index })}>Remove</button>
-          </li>
-        ))}
-      </ul>
-      <div className={styles.actions}>
-        <button onClick={() => dispatch({ type: "PREV_STEP" })}>Back</button>
-        <button onClick={handleNext} disabled={loading}>Next</button>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Work Experience</h2>
+          <p className={styles.subtitle}>List your previous roles and milestones.</p>
+        </div>
+
+        <div className={styles.expForm}>
+          <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+            <label className={styles.label}>Job Title / Role</label>
+            <input 
+              className={styles.input}
+              placeholder="e.g. Senior Software Engineer"
+              value={form.role}
+              onChange={(e) => setForm({...form, role: e.target.value})}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>Company</label>
+            <input 
+              className={styles.input}
+              placeholder="e.g. Google"
+              value={form.company}
+              onChange={(e) => setForm({...form, company: e.target.value})}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>Years / Duration</label>
+            <input 
+              className={styles.input}
+              placeholder="e.g. 2020 - 2023"
+              value={form.years}
+              onChange={(e) => setForm({...form, years: e.target.value})}
+            />
+          </div>
+          <button className={styles.addBtn} onClick={addExperience}>+ Add Experience</button>
+        </div>
+
+        <div className={styles.experienceList}>
+          {experiences.map((exp, index) => (
+            <div key={index} className={styles.experienceItem}>
+              <div className={styles.expInfo}>
+                <h4>{exp.role}</h4>
+                <p>{exp.company} • {exp.years}</p>
+              </div>
+              <button 
+                className={styles.removeBtn}
+                onClick={() => dispatch({ type: 'REMOVE_EXPERIENCE', payload: index })}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.actions}>
+          <button className={styles.backBtn} onClick={() => dispatch({ type: 'SET_STEP', payload: 2 })}>
+            Back
+          </button>
+          <button className={styles.nextBtn} onClick={() => dispatch({ type: 'SET_STEP', payload: 4 })}>
+            Review Profile
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,108 +1,387 @@
+/* 1. VIEWPORT LOCK - Stops the whole page from scrolling */
 .dashboardLayout {
   display: flex;
   flex-direction: row;
   justify-content: center;
   gap: 30px;
-  padding: 40px;
-  min-height: 100vh;
+  padding: 20px 40px;
+  height: 100vh;
   background: #f8fafc;
   font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* SIDEBAR COMPONENTS */
-.sidebar { flex: 0 0 280px; display: flex; flex-direction: column; }
+/* 2. SIDEBAR */
+.sidebar {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 20px;
+}
+
 .profileCard {
-  background: #1e293b; color: white; padding: 30px 20px;
-  border-radius: 20px; text-align: center; margin-bottom: 20px;
+  background: #1e293b;
+  color: white;
+  padding: 25px 20px;
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
 .avatarGlow {
-  width: 70px; height: 70px; margin: 0 auto 15px;
+  width: 70px;
+  height: 70px;
+  margin-bottom: 15px;
   background: linear-gradient(45deg, #6366f1, #a855f7);
-  border-radius: 50%; padding: 3px;
+  border-radius: 50%;
+  padding: 3px;
 }
+
 .avatarInner {
-  background: #1e293b; width: 100%; height: 100%; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; font-weight: bold;
-}
-.statusBadge {
-  background: rgba(74, 222, 128, 0.2); color: #4ade80;
-  padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
-}
-
-/* CARDS */
-.glassCard {
-  background: white; border: 1px solid #e2e8f0;
-  padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
-.sectionLabel { font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 12px; }
-.modernTag {
-  background: #f1f5f9; color: #475569; padding: 4px 10px;
-  border-radius: 6px; font-size: 0.7rem; margin: 2px; display: inline-block;
+  background: #1e293b;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
-/* MAIN FEED */
-.mainFeed { flex: 1; max-width: 850px; min-width: 0; }
-.feedHeader { display: flex; justify-content: space-between; margin-bottom: 25px; }
-.mainHeading { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0; }
-.subHeading { color: #64748b; font-size: 0.95rem; }
-
-.filterBar { display: flex; gap: 10px; margin-bottom: 20px; }
-.filterTab {
-  background: white; border: 1px solid #e2e8f0; padding: 8px 16px;
-  border-radius: 10px; font-size: 0.85rem; cursor: pointer; color: #64748b;
+.userName { margin: 0; font-size: 1.1rem; }
+.userEmail { 
+  font-size: 0.8rem; 
+  color: #94a3b8; 
+  margin: 5px 0 20px; 
+  word-break: break-all;
 }
-.activeTab { background: #6366f1; color: white; border-color: #6366f1; }
 
+/* FIX: Profile Actions Container */
+.profileActions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px; /* Space between buttons */
+}
+
+.viewBtn, .editBtn, .logoutBtn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.viewBtn { background: #6366f1; color: white; }
+.viewBtn:hover { background: #4f46e5; }
+
+.editBtn { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
+.editBtn:hover { background: rgba(255, 255, 255, 0.2); }
+
+.logoutBtn { background: #fee2e2; color: #ef4444; margin-top: 5px; }
+.logoutBtn:hover { background: #fecaca; }
+
+/* 3. MAIN FEED */
+.mainFeed {
+  flex: 1;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.feedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.jobList {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 4. JOB CARDS */
 .jobCard {
-  background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px;
-  border: 1px solid #e2e8f0; transition: transform 0.2s;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 }
-.jobCard:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-.jobTitle { font-size: 1.2rem; font-weight: 700; color: #1e293b; margin: 0; }
-.companyName { color: #6366f1; font-weight: 600; margin: 5px 0; }
-.jobMeta { display: flex; gap: 15px; color: #94a3b8; font-size: 0.8rem; margin-top: 10px; }
 
-.scoreCircle {
-  width: 60px; height: 60px; border: 3px solid #f1f5f9; border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+.matchScoreBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(74, 222, 128, 0.1);
+  color: #22c55e;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
-.scoreNum { font-weight: 800; color: #1e293b; font-size: 0.9rem; }
-.scoreLabel { font-size: 0.55rem; text-transform: uppercase; color: #94a3b8; }
 
-.jobActions { display: flex; gap: 10px; margin-top: 20px; }
+.jobDetails {
+  display: flex;
+  gap: 15px;
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 12px 0 20px;
+}
+
 .applyBtn {
-  flex: 1; background: #6366f1; color: white; border: none;
-  padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;
-}
-.secondaryBtn {
-  background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 15px;
-  border-radius: 10px; font-weight: 600; cursor: pointer;
-}
-
-/* LOGOUT & TOGGLE */
-.logoutBtn {
-  margin-top: auto; background: #fee2e2; color: #ef4444; border: none;
-  padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-.toggleRow { display: flex; justify-content: space-between; align-items: center; }
-.toggleInput { width: 40px; height: 20px; cursor: pointer; }
-
-/* ANIMATION */
-.pulseDot {
-  width: 8px; height: 8px; background: #ef4444; border-radius: 50%;
-  animation: pulse 2s infinite; display: inline-block; margin-right: 5px;
-}
-@keyframes pulse {
-  0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
+  width: 100%;
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-/* RIGHT BAR */
-.rightSidebar { flex: 0 0 260px; }
-.statCard {
-  background: #6366f1; color: white; padding: 20px;
-  border-radius: 16px; margin-bottom: 20px; text-align: center;
+/* 5. ACTIVITY LOG */
+.glassCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
-.statVal { font-size: 2rem; font-weight: 900; margin: 0; }
-.logCard { background: white; border-radius: 16px; padding: 15px; border: 1px solid #e2e8f0; }
-.logEntry { font-size: 0.75rem; padding: 8px 0; border-bottom: 1px solid #f1f5f9; color: #64748b; }
+
+.logContainer {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.logItem {
+  font-size: 0.75rem;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+  color: #64748b;
+}
+
+/* --- ENHANCED MODAL STYLES --- */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8); /* Darker slate backdrop */
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: #ffffff;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  border-radius: 32px;
+  position: relative;
+  overflow: hidden; /* Header stays fixed */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modalHeader {
+  background: #1e293b;
+  padding: 30px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.modalBody {
+  padding: 30px;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.modalSection {
+  margin-bottom: 30px;
+}
+
+.modalSection h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Personal Info Grid */
+.personalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.infoBox label {
+  display: block;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.infoBox p {
+  margin: 0;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Skills Cloud */
+.skillCloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modernTag {
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Experience Cards */
+.experienceItem {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  border-left: 4px solid #6366f1;
+  margin-bottom: 12px;
+  border-top: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.experienceItem h4 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.expYears {
+  font-size: 0.8rem;
+  color: #6366f1;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.closeModal {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.closeModal:hover {
+  background: rgba(255,255,255,0.2);
+  transform: rotate(90deg);
+}
+.tabGroup {
+  display: flex;
+  gap: 10px;
+  background: #e2e8f0;
+  padding: 5px;
+  border-radius: 12px;
+}
+
+.tab, .activeTab {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.tab { background: transparent; color: #64748b; }
+.tab:hover { color: #1e293b; }
+
+.activeTab { background: white; color: #6366f1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+.appliedCard {
+  border-left: 4px solid #94a3b8;
+  opacity: 0.9;
+}
+
+.statusBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.appliedDate {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 10px;
+}
+
+.emptyMsg {
+  text-align: center;
+  margin-top: 50px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* LOADER */
+.loaderWrapper { display: flex; justify-content: center; align-items: center; height: 100vh; }
+.spinner {
+  width: 40px; height: 40px; border: 4px solid #f3f3f3;
+  border-top: 4px solid #6366f1; border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

@@ -1,75 +1,73 @@
-import { useState } from "react";
+import React from "react";
 import { useProfile } from "../../context/AppContext";
 import styles from "./PersonalStep.module.css";
 
 export default function PersonalStep() {
   const { state, dispatch } = useProfile();
-  const [error, setError] = useState("");
+  const { personal } = state.profile;
 
-  const personal = state?.profile?.personal || { first_name: "", middle_name: "", last_name: "", age: "" };
-
-  const handleNext = () => {
-    // Detailed validation with specific error messages
-    if (!personal.first_name?.trim()) {
-      setError("First name is required.");
-      return;
-    }
-    if (!personal.last_name?.trim()) {
-      setError("Last name is required.");
-      return;
-    }
-    if (!personal.age || isNaN(personal.age) || Number(personal.age) <= 0) {
-      setError("Please enter a valid age greater than 0.");
-      return;
-    }
-
-    setError("");
-    dispatch({ type: "NEXT_STEP" });
-  };
-
-  const handleChange = (field) => (e) => {
-    dispatch({ 
-      type: "UPDATE_FIELD", 
-      section: "personal", 
-      field, 
-      value: e.target.value 
-    });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    dispatch({ type: "UPDATE_PERSONAL", payload: { [name]: value } });
   };
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Personal Information</h2>
-      <div className={styles.fieldGroup}>
-        <input 
-          className={styles.input} 
-          placeholder="First Name *" 
-          value={personal.first_name} 
-          onChange={handleChange("first_name")} 
-        />
-        <input 
-          className={styles.input} 
-          placeholder="Middle Name (Optional)" 
-          value={personal.middle_name} 
-          onChange={handleChange("middle_name")} 
-        />
-        <input 
-          className={styles.input} 
-          placeholder="Last Name *" 
-          value={personal.last_name} 
-          onChange={handleChange("last_name")} 
-        />
-        <input 
-          className={styles.input} 
-          placeholder="Age *" 
-          type="number" 
-          value={personal.age} 
-          onChange={handleChange("age")} 
-        />
-      </div>
-      {error && <p className={styles.error} style={{ color: '#dc2626', fontSize: '0.875rem' }}>{error}</p>}
-      <div className={styles.actions}>
-        <button className={styles.nextButton} onClick={handleNext}>
-          Next
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <span className={styles.badge}>Step 01 — Basics</span>
+          <h2 className={styles.title}>Personal Information</h2>
+          <p className={styles.subtitle}>Enter your details exactly as you'd like them to appear on your profile.</p>
+        </div>
+
+        <div className={styles.formGrid}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="first_name">First Name</label>
+            <input 
+              id="first_name"
+              name="first_name" 
+              value={personal.first_name || ""} 
+              onChange={handleChange} 
+              placeholder="e.g. John" 
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label htmlFor="last_name">Last Name</label>
+            <input 
+              id="last_name"
+              name="last_name" 
+              value={personal.last_name || ""} 
+              onChange={handleChange} 
+              placeholder="e.g. Doe" 
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label htmlFor="location">Location</label>
+            <input 
+              id="location"
+              name="location" 
+              value={personal.location || ""} 
+              onChange={handleChange} 
+              placeholder="London, UK" 
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label htmlFor="phone">Phone Number</label>
+            <input 
+              id="phone"
+              name="phone" 
+              value={personal.phone || ""} 
+              onChange={handleChange} 
+              placeholder="+44 7700 900000" 
+            />
+          </div>
+        </div>
+
+        <button 
+          className={styles.submitBtn} 
+          onClick={() => dispatch({ type: "SET_STEP", payload: 2 })}
+        >
+          Save and Continue
         </button>
       </div>
     </div>

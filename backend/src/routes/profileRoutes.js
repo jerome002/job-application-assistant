@@ -1,19 +1,19 @@
 import express from "express";
 import {
   getProfile,
-  updatePersonal,
-  updateSkills,
-  updateExperience,
-  updateFullProfile // 1. Import this!
+  updateFullProfile // We only need the Master route now
 } from "../controllers/profileController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// Get the profile for the dashboard
 router.get("/", verifyToken, getProfile);
-router.put("/", verifyToken, updateFullProfile); // 2. ADD THIS LINE (The "Master" route)
-router.put("/personal", verifyToken, updatePersonal);
-router.put("/skills", verifyToken, updateSkills);
-router.put("/experience", verifyToken, updateExperience);
+
+// The "Atomic Sync" route used by the ReviewStep
+router.put("/", verifyToken, updateFullProfile);
+
+// Note: We removed updatePersonal, updateSkills, and updateExperience 
+// because updateFullProfile handles all of them now.
 
 export default router;

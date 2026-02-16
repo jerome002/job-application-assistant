@@ -1,112 +1,77 @@
-import { useState } from "react";
-import { useProfile } from "../../context/AppContext";
-import styles from "./SkillsStep.module.css";
-import api from "../../utils/api"; // Axios instance with JWT token
+import React, { useState } from 'react';
+import { useProfile } from '../../context/AppContext';
+import styles from './SkillsStep.module.css';
 
 export default function SkillsStep() {
   const { state, dispatch } = useProfile();
-  const [skill, setSkill] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [skillInput, setSkillInput] = useState("");
+  
+  // Safely access skills from the nested profile
+  const skills = state.profile?.skills || [];
 
-  // Prevent "Next" unless at least one skill
-  const isValid = state.profile.skills.length > 0;
-
-  // Add a skill locally
   const addSkill = () => {
-    const trimmedSkill = skill.trim();
-    if (!trimmedSkill) {
-      setError("Skill cannot be empty.");
-      return;
-    }
-
-    // Prevent duplicate skills
-    if (state.profile.skills.includes(trimmedSkill)) {
-      setError("This skill has already been added.");
-      return;
-    }
-
-    dispatch({ type: "ADD_SKILL", value: trimmedSkill });
-    setSkill("");
-    setError("");
-  };
-
-  // Save skills to backend and move to next step
-  const handleNext = async () => {
-    if (!isValid) {
-      setError("Please add at least one skill.");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await api.put("/profile/skills", { skills: state.profile.skills });
-
-      // Update frontend state with backend response
-      dispatch({ type: "SET_SKILLS", value: res.data.skills });
-
-      // Move to next step
-      dispatch({ type: "NEXT_STEP" });
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Failed to save skills");
-    } finally {
-      setLoading(false);
+    const trimmed = skillInput.trim();
+    if (trimmed && !skills.includes(trimmed)) {
+      // Use the action type your reducer actually has!
+      dispatch({ type: 'ADD_SKILL', payload: trimmed });
+      setSkillInput("");
     }
   };
 
+  const removeSkill = (skillToRemove) => {
+    // Standardized to the payload your reducer now expects
+    dispatch({ type: 'REMOVE_SKILL', payload: skillToRemove });
+  };
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Skills</h2>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Technical Skills</h2>
+          <p className={styles.subtitle}>Add the tools and technologies you excel at.</p>
+        </div>
 
-      <div className={styles.inputRow}>
-        <input
-          className={styles.input}
-          placeholder="Add a skill"
-          value={skill}
-          onChange={(e) => setSkill(e.target.value)}
-        />
-        <button className={styles.addButton} type="button" onClick={addSkill}>
-          Add
-        </button>
-      </div>
+        <div className={styles.inputRow}>
+          <input 
+            className={styles.input}
+            placeholder="e.g. React, Python, Figma"
+            value={skillInput}
+            onChange={(e) => setSkillInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addSkill()}
+          />
+          <button className={styles.addButton} type="button" onClick={addSkill}>Add</button>
+        </div>
 
-      <ul className={styles.list}>
-        {state.profile.skills.map((s, index) => (
-          <li key={index} className={styles.listItem}>
-            <span>{s}</span>
-            <button
-              className={styles.removeButton}
-              type="button"
-              onClick={() => dispatch({ type: "REMOVE_SKILL", index })}
-            >
-              Remove
-            </button>
-          </li>
-        ))}
-      </ul>
+        <div className={styles.tagContainer}>
+          {skills.length > 0 ? (
+            skills.map((skill, index) => (
+              <span key={index} className={styles.tag}>
+                {skill}
+                <button 
+                  className={styles.removeTag} 
+                  type="button" 
+                  onClick={() => removeSkill(skill)}
+                >
+                  ×
+                </button>
+              </span>
+            ))
+          ) : (
+            <p className={styles.emptyText}>No skills added yet...</p>
+          )}
+        </div>
 
-      {error && <p className={styles.error}>{error}</p>}
-
-      <div className={styles.actions}>
-        <button
-          className={`${styles.button} ${styles.backButton}`}
-          type="button"
-          onClick={() => dispatch({ type: "PREV_STEP" })}
-        >
-          Back
-        </button>
-
-        <button
-          className={`${styles.button} ${styles.nextButton}`}
-          type="button"
-          onClick={handleNext}
-          disabled={!isValid || loading}
-        >
-          {loading ? "Saving..." : "Next"}
-        </button>
+        <div className={styles.actions}>
+          <button className={styles.backBtn} onClick={() => dispatch({ type: 'SET_STEP', payload: 1 })}>
+            Back
+          </button>
+          <button 
+            className={styles.nextBtn} 
+            disabled={skills.length === 0}
+            onClick={() => dispatch({ type: 'SET_STEP', payload: 3 })}
+          >
+            Continue to Experience
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,100 +1,98 @@
-const savedToken = localStorage.getItem("token");
-const savedProfile = localStorage.getItem("profile");
-
 export const initialState = {
-  // If we have a token, assume they are authenticated for now
-  isAuthenticated: !!savedToken, 
+  isAuthenticated: !!localStorage.getItem("token"),
   step: Number(localStorage.getItem("currentStep")) || 1,
-  profile: savedProfile ? JSON.parse(savedProfile) : {
-    personal: { first_name: "", middle_name: "", last_name: "", age: "" },
-    account: { email: "", password: "" },
+  profile: {
+    personal: { first_name: "", last_name: "", email: "", location: "", phone: "" },
     skills: [],
-    experience: []
+    experience: [],
+    settings: { autoApply: false }
   }
 };
+
 export function profileReducer(state, action) {
   switch (action.type) {
-    case "UPDATE_FIELD":
+    case "SET_PROFILE":
+      const data = action.payload || {};
       return {
         ...state,
         profile: {
           ...state.profile,
-          [action.section]: {
-            // Guard against undefined sections to prevent crashes
-            ...(state.profile[action.section] || {}),
-            [action.field]: action.value
-          }
+          ...data,
+          personal: { 
+            ...state.profile.personal, 
+            ...(data.personal || {}),
+            email: data.email || data.personal?.email || state.profile.personal.email 
+          },
+          skills: data.skills || state.profile.skills || [],
+          experience: data.experience || state.profile.experience || [],
         }
       };
 
-    case "ADD_SKILL":
-      if (!action.value || state.profile.skills.includes(action.value)) return state;
+    case "UPDATE_PERSONAL":
       return {
         ...state,
-        profile: { ...state.profile, skills: [...state.profile.skills, action.value] }
+        profile: {
+          ...state.profile,
+          personal: { ...state.profile.personal, ...action.payload }
+        }
+      };
+
+    // --- FIXED SKILLS ---
+    case "ADD_SKILL":
+      // Standardized to action.payload
+      if (state.profile.skills.includes(action.payload)) return state;
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          skills: [...state.profile.skills, action.payload]
+        }
       };
 
     case "REMOVE_SKILL":
+      // Standardized to action.payload (the string name of the skill)
       return {
         ...state,
         profile: {
           ...state.profile,
-          skills: state.profile.skills.filter((_, i) => i !== action.index)
+          skills: state.profile.skills.filter(skill => skill !== action.payload)
         }
       };
 
+    // --- FIXED EXPERIENCE ---
     case "ADD_EXPERIENCE":
       return {
         ...state,
-        profile: { ...state.profile, experience: [...state.profile.experience, action.value] }
+        profile: {
+          ...state.profile,
+          experience: [...state.profile.experience, action.payload]
+        }
       };
 
     case "REMOVE_EXPERIENCE":
+      // Standardized to action.payload (the index number)
       return {
         ...state,
         profile: {
           ...state.profile,
-          experience: state.profile.experience.filter((_, i) => i !== action.index)
+          experience: state.profile.experience.filter((_, i) => i !== action.payload)
         }
       };
 
-    case "UPDATE_EXPERIENCE_FIELD":
-      const updated = [...state.profile.experience];
-      updated[action.index] = action.value;
-      return { ...state, profile: { ...state.profile, experience: updated } };
-
-    case "LOAD_PROFILE":
-    case "SET_PROFILE":
-      const payload = action.payload || {};
-      return {
-        ...state,
-        profile: {
-          // Merge payload into CURRENT state, not initialState, 
-          // to prevent wiping data when moving between steps.
-          ...state.profile,
-          personal: { ...state.profile.personal, ...(payload.personal || {}) },
-          account: { ...state.profile.account, ...(payload.account || {}) },
-          skills: Array.isArray(payload.skills) ? payload.skills : state.profile.skills,
-          experience: Array.isArray(payload.experience) ? payload.experience : state.profile.experience
-        }
-      };
+    case "SET_STEP":
+      localStorage.setItem("currentStep", action.payload);
+      return { ...state, step: action.payload };
 
     case "LOGIN_SUCCESS":
       return { ...state, isAuthenticated: true };
 
     case "LOGOUT":
-      localStorage.clear(); // Clears token, profile, and currentStep
-      return initialState;
-
-    case "NEXT_STEP":
-      // Increased to 5 to allow for Review step visibility
-      return { ...state, step: Math.min(state.step + 1, 5) };
-
-    case "PREV_STEP":
-      return { ...state, step: Math.max(state.step - 1, 1) };
-
-    case "GO_TO_STEP":
-      return { ...state, step: action.step };
+      localStorage.clear();
+      return {
+        ...initialState,
+        isAuthenticated: false,
+        step: 1
+      };
 
     default:
       return state;
