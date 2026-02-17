@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import styles from './Applications.module.css';
+import styles from './applications.module.css';
 
 const Applications = ({ onBack }) => {
   const [apps, setApps] = useState([]);
