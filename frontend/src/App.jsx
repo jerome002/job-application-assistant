@@ -10,6 +10,7 @@ import ReviewStep from "./components/steps/ReviewStep";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import JobDashboard from "./pages/JobDashboard";
+import Applications from "./pages/Application"; // Ensure filename is Application.jsx
 import SuccessStep from "./components/steps/SuccessStep";
 import api from "./utils/api";
 
@@ -25,6 +26,9 @@ function MainApp() {
   const { state, dispatch } = useProfile();
   const [authMode, setAuthMode] = useState("login");
   const [isInitializing, setIsInitializing] = useState(true);
+  
+  // State to toggle between Dashboard and Full Tracker
+  const [activeView, setActiveView] = useState("dashboard");
 
   useEffect(() => {
     const initAuth = async () => {
@@ -32,14 +36,15 @@ function MainApp() {
       if (token) {
         try {
           const res = await api.get("/profile");
-          dispatch({ type: "SET_PROFILE", payload: res.data.profile });
+          dispatch({ type: "SET_PROFILE", payload: res.data.profile || res.data });
           dispatch({ type: "LOGIN_SUCCESS" });
 
-          // Returning users with existing profiles go straight to the Dashboard
-          if (res.data.profile.skills?.length > 0) {
+          // Auto-redirect to dashboard if profile is complete
+          if (res.data.profile?.skills?.length > 0 || res.data.skills?.length > 0) {
             dispatch({ type: "SET_STEP", payload: 6 });
           }
         } catch (err) {
+          console.error("Auth init failed:", err);
           localStorage.removeItem("token");
           dispatch({ type: "LOGOUT" });
         }
@@ -51,9 +56,9 @@ function MainApp() {
 
   const handleEditProfile = () => dispatch({ type: "SET_STEP", payload: 1 });
 
-  if (isInitializing) return <div className="loader">Loading...</div>;
+  if (isInitializing) return <div className="loader">Loading Application...</div>;
 
-  // 1. Auth Logic
+  // 1. Auth Screens
   if (!state.isAuthenticated) {
     return (
       <AuthLayout>
@@ -82,22 +87,32 @@ function MainApp() {
     );
   }
 
-  // 2. Dashboard Logic (Now Step 6)
+  // 2. Dashboard & Application Tracker Logic (Step 6)
   if (state.step === 6) {
-    return <JobDashboard user={state.profile} onEdit={handleEditProfile} />;
+    return (
+      <>
+        {activeView === "dashboard" ? (
+          <JobDashboard 
+            onEdit={handleEditProfile} 
+            onViewApps={() => setActiveView("tracker")} // Standardized prop name
+          />
+        ) : (
+          <Applications 
+            onBack={() => setActiveView("dashboard")} 
+          />
+        )}
+      </>
+    );
   }
 
-  // 3. Multi-Step Onboarding Logic
+  // 3. Onboarding Steps (1-5)
   return (
     <ProfileLayout>
-      
       <main style={{ marginTop: "2rem" }}>
         {state.step === 1 && <PersonalStep />}
         {state.step === 2 && <SkillsStep />}
         {state.step === 3 && <ExperienceStep />}
         {state.step === 4 && <ReviewStep />}
-        
-        {/* Step 5 is the bridge celebration screen */}
         {state.step === 5 && <SuccessStep />}
       </main>
     </ProfileLayout>

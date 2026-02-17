@@ -15,7 +15,6 @@ export default function PersonalStep() {
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <span className={styles.badge}>Step 01 — Basics</span>
           <h2 className={styles.title}>Personal Information</h2>
           <p className={styles.subtitle}>Enter your details exactly as you'd like them to appear on your profile.</p>
         </div>

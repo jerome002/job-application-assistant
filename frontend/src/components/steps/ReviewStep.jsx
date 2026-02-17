@@ -76,7 +76,7 @@ export default function ReviewStep() {
           onClick={handleFinalSubmit}
           disabled={loading}
         >
-          {loading ? "Completing Profile..." : "Confirm & Finish 🚀"}
+          {loading ? "Completing Profile..." : "Confirm & Finish "}
         </button>
       </div>
     </div>

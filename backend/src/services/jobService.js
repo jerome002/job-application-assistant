@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Job from '../models/Job.js';
 import { extractSkills } from '../utils/extractSkills.js';
-import { runMatchingEngine } from './matchingEngine.js';
+import { runMatchingEngine } from './matchService.js';
 
 export const fetchTechJobs = async (io) => {
   try {

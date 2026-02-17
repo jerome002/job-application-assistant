@@ -3,10 +3,9 @@ import mongoose from "mongoose";
 const profileSchema = new mongoose.Schema({
   personal: {
     first_name: { type: String, default: "" },
-    middle_name: { type: String, default: "" },
     last_name: { type: String, default: "" },
-    phone: { type: String, default: "" }, // ADDED PHONE
-    location: { type: String, default: "" } // ENSURED LOCATION
+    phone: { type: String, default: "" },
+    location: { type: String, default: "" }
   },
   skills: { type: [String], default: [] },
   experience: [
@@ -17,30 +16,18 @@ const profileSchema = new mongoose.Schema({
     }
   ],
   settings: {
-    autoApply: { type: Boolean, default: false }
+    autoApply: { type: Boolean, default: false } // THE ROBOT SWITCH
   }
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true, 
-    lowercase: true, 
-    trim: true 
-  },
-  password: { 
-    type: String, 
-    required: true 
-  },
-  profile: { 
-    type: profileSchema, 
-    default: () => ({}) 
-  }
+  email: { type: String, required: true, unique: true, lowercase: true },
+  password: { type: String, required: true },
+  profile: { type: profileSchema, default: () => ({}) }
 }, { timestamps: true });
 
+// Remove password from JSON responses automatically
 userSchema.set('toJSON', {
-  virtuals: true,
   transform: (doc, ret) => {
     delete ret.password;
     return ret;
