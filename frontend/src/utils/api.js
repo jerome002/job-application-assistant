@@ -1,14 +1,15 @@
-// frontend/src/utils/api.js
 import axios from "axios";
 
+// This looks for a variable in your Vercel/Netlify settings
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: `${BASE_URL}/api`,
 });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token"); 
   if (token) {
-    // Ensure "Bearer " prefix is exactly correct
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

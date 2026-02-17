@@ -5,7 +5,8 @@ import { useProfile } from "../context/AppContext";
 import 'react-toastify/dist/ReactToastify.css';
 import styles from "./JobDashboard.module.css";
 
-const SOCKET_URL = "http://localhost:5000";
+
+const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const JobDashboard = ({ onEdit, onViewApps }) => {
   const { state, dispatch } = useProfile();
