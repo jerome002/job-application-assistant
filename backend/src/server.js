@@ -21,41 +21,37 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
+// Validation for critical variables
 if (!MONGO_URI) {
   console.error("FATAL ERROR: MONGO_URI is not defined in .env");
   process.exit(1);
 }
 
-// 1. IMPROVED CORS: Allow multiple origins (Local + Production)
+// 1. DYNAMIC CORS: Handles Local, Production, and Vercel Preview URLs
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://job-application-assistant-seven.vercel.app" // Your Vercel URL
+  "https://job-application-assistant-seven.vercel.app"
 ];
-
-// Check if a specific FRONTEND_URL is set in environment variables
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
-
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // 1. Allow internal requests (no origin)
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
 
-    // 2. Exact match check
-    const isAllowed = allowedOrigins.some((o) => origin.startsWith(o));
+    // Check if origin matches allowed list OR is a Vercel subdomain
+    const isAllowed = allowedOrigins.includes(origin);
+    const isVercelPreview = origin.endsWith(".vercel.app");
 
-    if (isAllowed) {
+    if (isAllowed || isVercelPreview) {
       callback(null, true);
     } else {
-      console.error(`CORS Blocked for origin: ${origin}`); // Log this to Render logs
+      console.error(`CORS Blocked for origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"] // Explicitly allow these
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 app.use(cors(corsOptions));
@@ -64,7 +60,7 @@ app.use(express.json());
 // 2. HTTP & Socket.io Setup
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: corsOptions // Sync Socket.io CORS with Express CORS
+  cors: corsOptions 
 });
 
 // Middleware to inject IO into controllers
@@ -102,9 +98,13 @@ io.on("connection", (socket) => {
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log("Database: MongoDB Connected Successfully");
+    
+    // Initialize Cron Jobs
     initCrons(io);
+
     server.listen(PORT, () => {
       console.log(`Server: Live on port ${PORT}`);
+      console.log(`Mode: ${process.env.NODE_ENV || 'development'}`);
     });
   })
   .catch((err) => {
