@@ -1,12 +1,13 @@
 import axios from "axios";
 
-// Clean the URL: Remove trailing slash if it exists to prevent double slashes like //auth/login
+// Clean the URL: Remove trailing slash if it exists
 const rawBaseURL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const cleanBaseURL = rawBaseURL.replace(/\/+$/, "");
 
 const API = axios.create({
   baseURL: cleanBaseURL,
-  timeout: 15000, // 15s timeout - crucial for slow Render spin-ups (Free Tier)
+  // CRITICAL: Increased to 60s to allow Render Free Tier to "wake up"
+  timeout: 60000, 
   headers: {
     "Content-Type": "application/json",
   },
@@ -23,7 +24,7 @@ API.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error("Request Interceptor Error:", error);
+    console.error("Request Error:", error);
     return Promise.reject(error);
   }
 );
@@ -33,20 +34,21 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Professional Touch: Auto-logout if token is expired/invalid (401)
+      // Auto-logout on 401 (Unauthorized/Expired)
       if (error.response.status === 401) {
-        console.warn("Session expired. Redirecting to login...");
+        console.warn("Session expired. Redirecting...");
         localStorage.removeItem("token");
-        // Only redirect if we aren't already on the login page
         if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
       }
       console.error(`API Error [${error.response.status}]:`, error.response.data);
+    } else if (error.code === 'ECONNABORTED') {
+      console.error("⏱Request Timeout: The server is taking too long to wake up.");
     } else if (error.request) {
-      console.error("Network Error: No response received from server.");
+      console.error("Network Error: No response received. Check if backend is awake.");
     } else {
-      console.error("Axios Configuration Error:", error.message);
+      console.error("Config Error:", error.message);
     }
     return Promise.reject(error);
   }
