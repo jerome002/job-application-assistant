@@ -4,57 +4,62 @@ import { verifyToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// 1. GET current profile & settings
-// Endpoint: GET /api/profile
+// GET current profile
 router.get('/', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (err) {
+    console.error("Fetch Profile Error:", err);
     res.status(500).json({ message: "Error fetching profile" });
   }
 });
 
-// 2. NEW: Update full profile (Used by ReviewStep.jsx)
-// Endpoint: PUT /api/profile
+// Update full profile safely
 router.put('/', verifyToken, async (req, res) => {
   try {
     const { personal, skills, experience } = req.body;
-    
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      { 
-        $set: { 
-          "profile.personal": personal,
-          "profile.skills": skills,
-          "profile.experience": experience
-        } 
-      },
-      { new: true, runValidators: true }
-    );
 
-    res.json({ message: "Profile updated successfully", profile: updatedUser.profile });
+    // Make sure the user exists
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Initialize profile if undefined
+    if (!user.profile) user.profile = {};
+    if (!user.profile.skills) user.profile.skills = [];
+    if (!user.profile.experience) user.profile.experience = [];
+
+    // Update fields if provided
+    if (personal) user.profile.personal = personal;
+    if (skills) user.profile.skills = skills;
+    if (experience) user.profile.experience = experience;
+
+    await user.save();
+    res.json({ message: "Profile updated successfully", profile: user.profile });
   } catch (err) {
     console.error("Profile Update Error:", err);
     res.status(500).json({ message: "Error updating profile" });
   }
 });
 
-// 3. Update auto-apply setting
-// Endpoint: PUT /api/profile/settings
+// Update auto-apply setting
 router.put('/settings', verifyToken, async (req, res) => {
   try {
     const { autoApply } = req.body;
-    
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: { "profile.settings.autoApply": autoApply } },
-      { new: true }
-    );
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.profile) user.profile = {};
+    if (!user.profile.settings) user.profile.settings = {};
+
+    user.profile.settings.autoApply = autoApply ?? false;
+    await user.save();
 
     res.json({ message: "Settings updated", autoApply: user.profile.settings.autoApply });
   } catch (err) {
+    console.error("Settings Update Error:", err);
     res.status(500).json({ message: "Error updating settings" });
   }
 });

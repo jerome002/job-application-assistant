@@ -8,49 +8,44 @@ export const fetchTechJobs = async (io) => {
     const APP_ID = process.env.ADZUNA_APP_ID;
     const APP_KEY = process.env.ADZUNA_APP_KEY;
 
-    if (!APP_ID || !APP_KEY) {
-      console.error("API keys missing in .env");
-      return;
-    }
+    if (!APP_ID || !APP_KEY) return console.error("API keys missing");
 
-    const url = `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=${APP_ID}&app_key=${APP_KEY}&results_per_page=15&what=software%20developer%20AI%20Data%20Engineer&content-type=application/json`;
+    // Fetching Software/AI/Data roles
+    const url = `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=${APP_ID}&app_key=${APP_KEY}&results_per_page=20&what=software%20developer%20AI%20Data&content-type=application/json`;
 
-    console.log("[API] Contacting Adzuna...");
     const response = await axios.get(url);
     const jobs = response.data.results;
 
     if (!jobs) return;
 
     for (let job of jobs) {
-      // 1. SAFELY extract and clean strings
-      // We use a fallback empty string "" so .replace never hits 'undefined'
+      // Remove HTML tags from Adzuna's strings
       const title = String(job.title || "").replace(/<\/?[^>]+(>|$)/g, "");
       const description = String(job.description || "").replace(/<\/?[^>]+(>|$)/g, "");
-      const company = job.company?.display_name || "Company Confidential";
-      const location = job.location?.display_name || "Remote/USA";
-
-      // 2. Extract skills from the cleaned description
+      
       const skillsRequired = extractSkills(description);
 
-      // 3. Upsert into MongoDB
       await Job.findOneAndUpdate(
-        { url: job.redirect_url },
+        { url: job.redirect_url }, // Unique identifier
         {
           title,
-          company,
+          company: job.company?.display_name || "Company Confidential",
           description,
-          location,
+          location: job.location?.display_name || "Remote",
+          url: job.redirect_url,
+          salary: job.salary_min ? `$${job.salary_min} - $${job.salary_max}` : "Competitive",
           skillsRequired,
-          postedAt: job.created ? new Date(job.created) : new Date(),
+          source: 'Adzuna',
           processed: false
         },
         { upsert: true, new: true }
       );
     }
-    console.log(`✅ Successfully processed ${jobs.length} jobs.`);
+
+    console.log(`Jobs Synced. Running Match Engine...`);
     await runMatchingEngine(io);
-    console.log(`Successfully processed ${jobs.length} jobs.`);
+    
   } catch (err) {
-    console.error("Job Fetch Error:", err.message);
+    console.error("Adzuna Service Error:", err.message);
   }
 };
