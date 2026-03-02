@@ -1,43 +1,63 @@
 import { io } from "socket.io-client";
 
-//  Use Vite env or fallback to localhost
+// Professional environment fallback logic
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL ||
   import.meta.env.VITE_API_URL?.replace("/api", "") ||
   "http://localhost:5000";
 
-// Initialize Socket.io client
 export const socket = io(SOCKET_URL, {
-  autoConnect: false,   // we manually connect when user info is ready
-  transports: ["websocket"], // force websocket only (optional)
+  autoConnect: false,
+  transports: ["websocket"], 
   reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
+  reconnectionAttempts: 10, // Increased for better production stability
+  reconnectionDelay: 2000,
+  withCredentials: true,    // Ensures CORS cookies/headers pass through
 });
 
-// Join user's private room for real-time matches
+/**
+ * Join user's private room for real-time AI match alerts
+ */
 export const joinUserRoom = (userId) => {
   if (userId && socket.connected) {
     socket.emit("join_room", userId);
-    console.log(`👤 Joined Socket Room: ${userId}`);
+    console.log(`Socket: Joined Room [${userId}]`);
   }
 };
 
-// Safe connect function
+/**
+ * Robust connect function with auto-rejoin logic
+ */
 export const connectSocket = (userId) => {
+  if (!userId) return;
+
   if (!socket.connected) {
     socket.connect();
+
+    // CRITICAL: Re-join room on every connect/reconnect event
     socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
+      console.log("Socket: Connected", socket.id);
       joinUserRoom(userId);
+    });
+
+    // Handle reconnection specifically
+    socket.on("reconnect", () => {
+      console.log("Socket: Reconnected");
+      joinUserRoom(userId);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket: Connection Error", err.message);
     });
   }
 };
 
-// Safe disconnect function
 export const disconnectSocket = () => {
   if (socket.connected) {
+    // Remove listeners to prevent memory leaks in React
+    socket.off("connect");
+    socket.off("reconnect");
     socket.disconnect();
-    console.log("Socket disconnected");
+    console.log("Socket: Disconnected");
   }
 };
